@@ -48,7 +48,7 @@ function draw() {
         ctx.fillStyle = (i % 2 === 0) ? '#FFB6C1' : '#FF1493';
         ctx.fillText(text, i * fontSize, drops[i] * fontSize);
         drops[i]++;
-        if (drops[i] * fontSize > canvas.height && Math.random() > .80) {
+        if (drops[i] * fontSize > canvas.height && Math.random() > .95) {
             drops[i] = 0;
         }
     }
