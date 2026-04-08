@@ -1,0 +1,306 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #050510;
+    color: white;
+    font-family: 'Courier New', Courier, monospace;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    touch-action: none; /* ป้องกันการเลื่อนจอในมือถือ */
+}
+
+canvas {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+#stars-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+.star {
+    position: absolute;
+    background-color: white;
+    border-radius: 50%;
+    animation: twinkle infinite alternate;
+}
+
+@keyframes twinkle {
+    0% { opacity: 0.2; transform: scale(0.8); }
+    100% { opacity: 1; transform: scale(1.2); }
+}
+
+#intro-scene {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    text-align: center;
+    width: 100%;
+    transition: opacity 1s;
+}
+
+.pink-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #d81b60;
+    font-weight: bold;
+    text-shadow: 0 0 50px #e91e63;
+    white-space: nowrap;
+    opacity: 0;
+    animation: showAndHide 2.5s ease-in-out forwards;
+}
+
+@keyframes showAndHide {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+    30% { opacity: 1; transform: translate(-50%, -50%) scale(1.0); }
+    70% { opacity: 1; transform: translate(-50%, -50%) scale(1.0); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(2.5); }
+}
+
+/* =========================================
+   ส่วนของการ์ดสมุด 3D (ปรับให้รองรับทุกหน้าจอ)
+   ========================================= */
+
+@keyframes cardEntrance {
+    from { opacity: 0; transform: translate(-50%, -30%) scale(0.5); }
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+#card-scene {
+    position: absolute;
+    z-index: 20;
+    display: none;
+    perspective: 2000px; 
+    width: 320px;  /* ขนาดความกว้างการ์ดในคอม */
+    height: 480px; /* ขนาดความสูงการ์ดในคอม */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* จัดให้อยู่กึ่งกลางเสมอ */
+    animation: cardEntrance 1.5s ease-out forwards;
+}
+
+.book {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+    filter: drop-shadow(0 15px 25px rgba(0,0,0,0.6));
+}
+
+.book-open {
+    transform: translateX(50%); /* สไลด์เล่มไปทางขวาเพื่อให้กางออกแล้วอยู่กลางจอพอดี */
+}
+
+.page {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: #fff;
+    border-radius: 0 10px 10px 0;
+    transform-origin: left center;
+    backface-visibility: hidden;
+    padding: 25px;
+    cursor: pointer;
+    transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 1. หน้าขวา (หน้าเนื้อหารูปภาพ) ให้อยู่ล่างสุด */
+.page-right {
+    z-index: 1;
+    cursor: pointer;
+    background-color: #fafafa;
+    box-shadow: inset 15px 0 20px -10px rgba(0,0,0,0.1);
+}
+
+/* 2. หน้าซ้าย (หน้าที่จะพลิกมาเป็นฝั่งซ้าย) ให้อยู่ตรงกลาง */
+.page-left {
+    z-index: 2;
+    transform: rotateY(0deg); 
+    background-color: #f8f4e6;
+    border-radius: 10px 0 0 10px;
+    border-right: 1px solid #ddd;
+    box-shadow: inset -10px 0 15px -10px rgba(0,0,0,0.15);
+}
+
+/* 3. หน้าปก (แผ่นบนสุด ปิดทับทุกอย่างมิดชิด) */
+.page-cover {
+    z-index: 3; 
+    background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%);
+    border: 1px solid #f48fb1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.page-cover img {
+    width: 100%;
+    height: auto;
+    border-radius: 5px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.page-cover h3 {
+    color: #d81b60;
+    margin-top: 15px;
+    text-align: center;
+}
+
+/* --- สถานะตอนเปิด --- */
+.flipped.page-cover {
+    transform: rotateY(-180deg);
+    /* ให้หน้าปกจางหายไปเพื่อไม่ให้กวนใจฝั่งซ้าย */
+    opacity: 0 !important;
+    transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease 0.3s !important;
+}
+
+.flipped.page-left {
+    -webkit-transform: rotateY(-180deg) translateZ(2px) !important;
+    transform: rotateY(-180deg) translateZ(2px) !important;
+    z-index: 15 !important;
+    backface-visibility: visible !important; /* เปิดให้เห็นข้อความด้านหลังกระดาษ */
+}
+
+/* --- ตกแต่งเนื้อหาด้านใน --- */
+.back-content {
+    transform: rotateY(180deg); /* พลิกตัวอักษรกลับมาให้อ่านได้ */
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backface-visibility: visible !important;
+}
+
+.message-box.vintage-paper {
+    background-color: #fdfaf1;
+    background-image: 
+        url('https://www.transparenttextures.com/patterns/old-mathematics.png'),
+        url('https://www.transparenttextures.com/patterns/paper-fibers.png');
+    background-blend-mode: multiply;
+    padding: 15px;
+    border-radius: 15px;
+    border: 1px solid #e0d0b0;
+    text-align: center;
+    width: 100%;
+    height: 100%; /* แก้จาก 550px เป็น 100% เพื่อให้พอดีกรอบกระดาษเสมอ */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    font-size: 0.8rem;
+    color: #ec407a;
+    line-height: 1.5;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.message-box span {
+    font-size: 0.75rem;
+    color: #555;
+    display: block;
+    margin-top: 8px;
+}
+
+.vintage-quote {
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.1rem;
+    color: #ec407a;
+    margin-top: 15px;
+    font-style: italic;
+}
+
+.right-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    gap: 15px;
+}
+
+.right-content img {
+    width: 85%;
+    height: 180px;
+    border-radius: 8px;
+    object-fit: cover;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.right-content p {
+    color: #d81b60;
+    font-size: 0.9rem;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 5px;
+}
+
+/* =========================================
+   📱 Mobile Responsive (จัดสเกลกึ่งกลาง พอดีจอ)
+   ========================================= */
+@media screen and (max-width: 600px) {
+    .pink-text { 
+        font-size: 15vw !important; 
+    }
+
+    /* ปรับขนาดสมุดในมือถือให้พอดีจอ ไม่ล้นออกข้าง */
+    #card-scene {
+        width: 165px; /* เมื่อกางออก 2 หน้าจะกว้าง 330px ซึ่งพอดีจอมือถือทั่วไป */
+        height: 320px;
+    }
+
+    .page { padding: 12px; }
+    .page-cover img { width: 90%; }
+    .page-cover h3 { font-size: 0.85rem; margin-top: 10px; }
+
+    /* ปรับตัวหนังสือฝั่งซ้ายให้อ่านง่ายและไม่ล้นกรอบ */
+    .message-box.vintage-paper {
+        padding: 8px;
+        font-size: 0.6rem;
+        line-height: 1.4;
+    }
+    .message-box.vintage-paper h4 {
+        font-size: 0.7rem;
+    }
+    .message-box span { 
+        font-size: 0.55rem; 
+        margin-top: 6px; 
+    }
+    .vintage-quote { 
+        font-size: 0.75rem; 
+        margin-top: 8px; 
+    }
+
+    /* ปรับรูปคู่ฝั่งขวา */
+    .right-content { gap: 10px; }
+    .right-content img { 
+        width: 95%; 
+        height: 110px; /* ลดความสูงรูปลงเพื่อให้มีที่ว่างเขียนข้อความ */
+        border-radius: 6px; 
+    }
+    .right-content p { 
+        font-size: 0.75rem; 
+        margin-top: 0; 
+    }
+}
